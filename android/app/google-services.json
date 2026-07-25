@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "101256881311",
+    "firebase_url": "https://sanctuary-e2f50-default-rtdb.firebaseio.com",
+    "project_id": "sanctuary-e2f50",
+    "storage_bucket": "sanctuary-e2f50.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101256881311:android:5a01e0ec3da6bd5bb0aeaa",
+        "android_client_info": {
+          "package_name": "com.example.sanctuary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCijXdLGGSxKBCzJ2d5sjDgqsQrxX1nGO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101256881311:android:062e6085fbec184ab0aeaa",
+        "android_client_info": {
+          "package_name": "com.sanctuary.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCijXdLGGSxKBCzJ2d5sjDgqsQrxX1nGO4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
