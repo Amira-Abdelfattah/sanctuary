@@ -19,6 +19,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String displayName,
+    Map<String, dynamic>? extraProfileData,
   });
 
   Future<Result<void>> signOut();

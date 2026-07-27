@@ -11,9 +11,18 @@ import '../providers/auth_provider.dart';
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
 
+  static const routeName = '/signup';
+
   @override
   State<SignupPage> createState() => _SignupPageState();
 }
+
+const _homeLocationOptions = [
+  'Apartment',
+  'Detached House',
+  'Office Space',
+  'Condominium',
+];
 
 class _SignupPageState extends State<SignupPage> {
   final _formKey = GlobalKey<FormState>();
@@ -21,260 +30,209 @@ class _SignupPageState extends State<SignupPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
-  bool _agreed = false;
+
+  String? _homeLocation;
+  bool _agreedToTerms = false;
+  bool _showTermsError = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
+    final formValid = _formKey.currentState!.validate();
 
-    if (!_agreed) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please agree to the Terms of Service first.')),
-      );
-      return;
-    }
+    // Checkbox has no built-in FormField validator here, so it's
+    // checked separately and surfaced as its own inline error.
+    setState(() => _showTermsError = !_agreedToTerms);
+
+    if (!formValid || !_agreedToTerms) return;
 
     final auth = context.read<AuthProvider>();
     final ok = await auth.signUp(
       email: _emailController.text.trim(),
       password: _passwordController.text,
       displayName: _nameController.text.trim(),
+      extraProfileData: {
+        'homeLocation': _homeLocation,
+      },
     );
 
-    if (!mounted) return;
-
-    if (ok) {
-      // Signup succeeded → pop back to the root route so the
-      // Splash/AuthProvider tree (which is now "authenticated")
-      // shows the RootShell instead of the Login screen.
-      Navigator.of(context).popUntil((route) => route.isFirst);
-    } else {
+    if (!ok && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.errorMessage ?? 'Sign up failed. Please try again.')),
+        SnackBar(content: Text(auth.errorMessage ?? 'Sign up failed')),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFE8EEF2), Colors.white],
-            stops: [0.0, 0.3],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildTopBar(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppSpacing.containerPadding),
-                  child: Column(
-                    children: [
-                      _buildHeader(),
-                      const SizedBox(height: 24),
-                      _buildFormCard(),
-                      const SizedBox(height: 24),
-                      _buildFooter(),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        leading: const BackButton(color: AppColors.primary),
       ),
-    );
-  }
-
-  Widget _buildTopBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(children: [
-            const Icon(Icons.shield_outlined,
-                color: Color(0xFF344E5F), size: 24),
-            const SizedBox(width: 8),
-            Text('Sanctuary',
-                style: AppTextStyles.labelMd.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF344E5F))),
-          ]),
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Login',
-                  style: AppTextStyles.labelMd.copyWith(color: Colors.grey))),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-              color: const Color(0xFFACCAE3).withOpacity(0.5),
-              shape: BoxShape.circle),
-          child: const Icon(Icons.lock_open_outlined,
-              color: Color(0xFF344E5F), size: 32),
-        ),
-        const SizedBox(height: 20),
-        Text('Begin Your Journey',
-            style:
-                AppTextStyles.headlineMd.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        Text(
-          'Secure your sanctuary with ease.\nCreate an account to manage your devices.',
-          textAlign: TextAlign.center,
-          style: AppTextStyles.bodyMd.copyWith(color: Colors.black54),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFormCard() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        boxShadow: [
-          BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 10))
-        ],
-      ),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _LabeledField(
-                label: 'Full Name',
-                child: AppTextField(
-                    label: '',
-                    hint: 'John Doe',
-                    controller: _nameController,
-                    prefixIcon: Icons.person_outline)),
-            const SizedBox(height: 16),
-            _LabeledField(
-                label: 'Email Address',
-                child: AppTextField(
-                    label: '',
-                    hint: 'name@example.com',
-                    controller: _emailController,
-                    prefixIcon: Icons.email_outlined)),
-            const SizedBox(height: 16),
-            _LabeledField(
-                label: 'Password',
-                child: AppTextField(
-                    label: '',
-                    hint: '••••••••',
-                    controller: _passwordController,
-                    obscureText: true,
-                    prefixIcon: Icons.key_outlined)),
-            const SizedBox(height: 16),
-            _LabeledField(
-                label: 'Confirm',
-                child: AppTextField(
-                    label: '',
-                    hint: '••••••••',
-                    controller: _confirmController,
-                    obscureText: true,
-                    prefixIcon: Icons.lock_outline)),
-            const SizedBox(height: 16),
-            _LabeledField(
-                label: 'Smart Home Location', child: _LocationDropdown()),
-            const SizedBox(height: 20),
-            Row(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.containerPadding),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Checkbox(
-                    value: _agreed,
-                    onChanged: (v) => setState(() => _agreed = v!)),
-                Expanded(
+                Row(
+                  children: [
+                    const Icon(Icons.shield_rounded, color: AppColors.primary, size: 26),
+                    const SizedBox(width: 8),
+                    Text('Sanctuary', style: AppTextStyles.headlineMd.copyWith(color: AppColors.primary)),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.stackMd),
+                Text('Begin your journey', style: AppTextStyles.headlineLgMobile),
+                const SizedBox(height: AppSpacing.stackSm),
+                Text(
+                  'Secure your sanctuary with ease. Create an account to manage your smart home devices from anywhere.',
+                  style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                ),
+                const SizedBox(height: AppSpacing.stackMd),
+                AppTextField(
+                  label: 'Full name',
+                  hint: 'John Doe',
+                  controller: _nameController,
+                  prefixIcon: Icons.person_outline_rounded,
+                  validator: (v) => Validators.notEmpty(v, field: 'Full name'),
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: AppSpacing.stackSm),
+                AppTextField(
+                  label: 'Email address',
+                  hint: 'name@example.com',
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  prefixIcon: Icons.mail_outline_rounded,
+                  validator: Validators.email,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: AppSpacing.stackSm),
+                AppTextField(
+                  label: 'Password',
+                  hint: '••••••••',
+                  controller: _passwordController,
+                  obscureText: true,
+                  prefixIcon: Icons.key_outlined,
+                  validator: Validators.password,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: AppSpacing.stackSm),
+                AppTextField(
+                  label: 'Confirm password',
+                  hint: '••••••••',
+                  controller: _confirmController,
+                  obscureText: true,
+                  prefixIcon: Icons.lock_outline_rounded,
+                  validator: (v) => Validators.confirmPassword(v, _passwordController.text),
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: AppSpacing.stackSm),
+
+                // --- Smart Home Location dropdown -----------------------
+                DropdownButtonFormField<String>(
+                  initialValue: _homeLocation,
+                  decoration: const InputDecoration(
+                    labelText: 'Smart home location',
+                    prefixIcon: Icon(Icons.location_on_outlined, color: AppColors.onSurfaceVariant, size: 20),
+                  ),
+                  hint: const Text('Select location'),
+                  items: _homeLocationOptions
+                      .map((option) => DropdownMenuItem(value: option, child: Text(option)))
+                      .toList(),
+                  onChanged: (value) => setState(() => _homeLocation = value),
+                  validator: (value) => value == null ? 'Please select your home location' : null,
+                ),
+                const SizedBox(height: AppSpacing.stackSm),
+
+                // --- Terms checkbox --------------------------------------
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Checkbox(
+                      value: _agreedToTerms,
+                      activeColor: AppColors.primary,
+                      onChanged: (value) => setState(() {
+                        _agreedToTerms = value ?? false;
+                        _showTermsError = false;
+                      }),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text.rich(
+                          TextSpan(
+                            style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant, fontSize: 13),
+                            children: [
+                              const TextSpan(text: 'I agree to the '),
+                              TextSpan(
+                                text: 'Terms of Service',
+                                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                              ),
+                              const TextSpan(text: '.'),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_showTermsError)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12, bottom: 8),
                     child: Text(
-                        'I agree to the Terms of Service and Privacy Policy.',
-                        style: AppTextStyles.labelSm)),
+                      'Please accept the Terms of Service to continue.',
+                      style: AppTextStyles.labelSm.copyWith(color: AppColors.error),
+                    ),
+                  ),
+
+                const SizedBox(height: AppSpacing.stackMd),
+                PrimaryButton(
+                  label: 'Create account',
+                  isLoading: auth.isLoading,
+                  onPressed: _submit,
+                ),
+                const SizedBox(height: AppSpacing.stackMd),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Already have an account? ', style: AppTextStyles.bodyMd.copyWith(color: AppColors.onSurfaceVariant)),
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Text(
+                        'Sign in',
+                        style: AppTextStyles.bodyMd.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.stackLg),
               ],
             ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-                label: 'Create Account',
-                icon: Icons.arrow_forward,
-                onPressed: _submit),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFooter() {
-    return Wrap(
-      // استبدال Row بـ Wrap لمنع الـ Overflow
-      alignment: WrapAlignment.center,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        Text(
-          'Already have a Sanctuary account? ',
-          style: AppTextStyles.bodyMd.copyWith(color: Colors.grey),
-        ),
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Text(
-            'Sign In',
-            style: AppTextStyles.bodyMd.copyWith(
-              color: const Color(0xFF344E5F),
-              fontWeight: FontWeight.bold,
-            ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _LabeledField extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _LabeledField({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label,
-            style: AppTextStyles.labelMd
-                .copyWith(fontWeight: FontWeight.bold, fontSize: 13)),
-        const SizedBox(height: 8),
-        child,
-      ],
-    );
-  }
-}
-
-class _LocationDropdown extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      decoration: const InputDecoration(
-          prefixIcon: Icon(Icons.location_on_outlined, size: 20)),
-      hint: const Text('Select location'),
-      items: ['Home', 'Office', 'Villa']
-          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-          .toList(),
-      onChanged: (v) {},
+      ),
     );
   }
 }

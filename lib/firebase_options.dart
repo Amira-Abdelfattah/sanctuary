@@ -45,20 +45,21 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyCijXdLGGSxKBCzJ2d5sjDgqsQrxX1nGO4',
-    appId: '1:101256881311:android:5a01e0ec3da6bd5bb0aeaa',
-    messagingSenderId: '101256881311',
+    apiKey: 'REPLACE_ME',
+    appId: 'REPLACE_ME',
+    messagingSenderId: 'REPLACE_ME',
     projectId: 'sanctuary-e2f50',
     databaseURL: 'https://sanctuary-e2f50-default-rtdb.firebaseio.com',
-    storageBucket: 'sanctuary-e2f50.firebasestorage.app',
+    storageBucket: 'sanctuary-e2f50.appspot.com',
   );
+
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAIbVk6qTGcxoh4j0MF0igjDdUxHKgKGYM',
-    appId: '1:101256881311:ios:88058c8b9bc71637b0aeaa',
-    messagingSenderId: '101256881311',
+    apiKey: 'REPLACE_ME',
+    appId: 'REPLACE_ME',
+    messagingSenderId: 'REPLACE_ME',
     projectId: 'sanctuary-e2f50',
     databaseURL: 'https://sanctuary-e2f50-default-rtdb.firebaseio.com',
-    storageBucket: 'sanctuary-e2f50.firebasestorage.app',
-    iosBundleId: 'com.example.sanctuary',
+    storageBucket: 'sanctuary-e2f50.appspot.com',
+    iosBundleId: 'com.sanctuary.app',
   );
 }
