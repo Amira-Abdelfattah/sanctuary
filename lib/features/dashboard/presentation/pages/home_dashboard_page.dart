@@ -8,6 +8,7 @@ import '../../../../core/widgets/sensor_metric_card.dart';
 import '../../../../core/widgets/status_pill.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/sensor_provider.dart';
+import '../widgets/ai_insight_card.dart';
 import '../widgets/home_status_hero_card.dart';
 
 /// Home tab — mirrors the "home_dashboard" Stitch design: hero status
@@ -126,6 +127,8 @@ class HomeDashboardPage extends StatelessWidget {
                     icon: reading.relayActive ? Icons.power_outlined : Icons.power_off_outlined,
                     fullWidth: true,
                   ),
+                  const SizedBox(height: AppSpacing.gutter),
+                  AiInsightCard(reading: reading),
                   const SizedBox(height: AppSpacing.stackLg),
                   PrimaryButton(
                     label: 'View alerts',

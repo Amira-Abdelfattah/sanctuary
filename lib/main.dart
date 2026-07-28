@@ -8,6 +8,7 @@ import 'core/theme/app_theme.dart';
 import 'firebase_options.dart';
 
 import 'features/auth/data/datasources/firebase_auth_datasource.dart';
+import 'features/auth/data/datasources/user_profile_datasource.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
 import 'features/auth/domain/repositories/auth_repository.dart';
 import 'features/auth/domain/usecases/sign_in_usecase.dart';
@@ -20,7 +21,7 @@ import 'features/dashboard/data/repositories/sensor_repository_impl.dart';
 import 'features/dashboard/domain/repositories/sensor_repository.dart';
 import 'features/dashboard/presentation/providers/sensor_provider.dart';
 
-import 'features/splash_page.dart';
+import 'features/splash/presentation/pages/splash_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +42,8 @@ class SanctuaryApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // --- Auth wiring -----------------------------------------------------
     final authDatasource = FirebaseAuthDatasource(FirebaseAuth.instance);
-    final AuthRepository authRepository = AuthRepositoryImpl(authDatasource);
+    final profileDatasource = UserProfileDatasource(FirebaseDatabase.instance);
+    final AuthRepository authRepository = AuthRepositoryImpl(authDatasource, profileDatasource);
 
     // --- Sensor wiring -----------------------------------------------------
     final sensorDatasource = SensorRemoteDatasource(FirebaseDatabase.instance);
@@ -65,7 +67,7 @@ class SanctuaryApp extends StatelessWidget {
         title: 'Sanctuary',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
-        home:  SplashPage(),
+        home: const SplashPage(),
       ),
     );
   }

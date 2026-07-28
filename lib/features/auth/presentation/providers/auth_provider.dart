@@ -64,12 +64,14 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
     required String displayName,
+    Map<String, dynamic>? extraProfileData,
   }) async {
     _setLoading(true);
     final result = await _signUpUseCase(
       email: email,
       password: password,
       displayName: displayName,
+      extraProfileData: extraProfileData,
     );
     return result.when(
       success: (u) {

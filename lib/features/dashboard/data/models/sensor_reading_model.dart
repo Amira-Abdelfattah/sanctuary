@@ -20,6 +20,11 @@ class SensorReadingModel {
       currentAlert: _asBool(map['current_alert']),
       relayActive: map.containsKey('relay_active') ? _asBool(map['relay_active']) : true,
       statusMessage: (map['status'] as String?) ?? 'System normal',
+      // Written separately by the Python anomaly-detection service, not
+      // by the ESP32 firmware — may not exist yet on a fresh database.
+      aiAnomaly: _asBool(map['ai_anomaly']),
+      aiAnomalyScore: _asDouble(map['ai_anomaly_score']),
+      hasAiData: map.containsKey('ai_anomaly'),
     );
   }
 
